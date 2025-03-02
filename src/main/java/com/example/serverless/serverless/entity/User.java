@@ -10,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -38,10 +37,12 @@ public class User {
     private String email;
 
     @Getter @Setter
+    @Column(nullable = false)
     private String password;
 
     @Getter @Setter
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Role role;
 
     public enum Role {
