@@ -18,11 +18,13 @@ import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "pedidos", schema = "public")
 public class Pedido {
 
