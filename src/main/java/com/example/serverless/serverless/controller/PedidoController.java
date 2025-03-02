@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -35,7 +36,7 @@ public class PedidoController {
     }
 
     @PostMapping()
-    public ResponseEntity<Pedido> post(Pedido pedido) {
+    public ResponseEntity<Pedido> post(@RequestBody Pedido pedido) {
         Pedido createdPedido = pedidoService.criarPedido(pedido);
         URI location = ServletUriComponentsBuilder
             .fromCurrentRequest()
@@ -46,7 +47,7 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> atualizar(@PathVariable("id") Pedido pedido, Integer codStatus, Long id) {
+    public ResponseEntity<String> atualizar(@PathVariable("id") @RequestBody Pedido pedido, Integer codStatus, Long id) {
         pedidoService.atualizaPedido(pedido, codStatus, id);
         return ResponseEntity.ok("Pedido atualizado com sucesso");
     }
