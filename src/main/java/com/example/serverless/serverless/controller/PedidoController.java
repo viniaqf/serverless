@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -27,12 +28,22 @@ public class PedidoController {
     
     @GetMapping()
     public ResponseEntity<List<Pedido>> getAll() {
-        return ResponseEntity.ok(pedidoService.getAll());
+        List<Pedido> pedidos = pedidoService.getAll();
+        pedidos.forEach(pedido -> {
+            if (pedido.getCliente() != null) {
+                pedido.getCliente().setPassword(null);
+            }
+        });
+        return ResponseEntity.ok().body(pedidos);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> getById(@PathVariable("id") final Long id) {
-        return ResponseEntity.ok(pedidoService.findById(id));
+        Pedido pedido = pedidoService.findById(id);
+        if (pedido.getCliente() != null) {
+            pedido.getCliente().setPassword(null);
+        }
+        return ResponseEntity.ok(pedido);
     }
 
     @PostMapping
@@ -51,9 +62,26 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<String> atualizar(@PathVariable("id") @RequestBody Pedido pedido, Integer codStatus, Long id) {
-        pedidoService.atualizaPedido(pedido, codStatus, id);
-        return ResponseEntity.ok("Pedido atualizado com sucesso");
+    public ResponseEntity<Pedido> atualizar(
+            @PathVariable("id") Long id,
+            @RequestParam(required = false) Integer codStatus,
+            @RequestBody(required = false) Pedido pedidoAtualizado) {
+        
+        
+        Pedido pedidoExistente = pedidoService.findById(id);
+        if (pedidoExistente == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        
+        Pedido pedidoResult = pedidoService.atualizaPedido(pedidoAtualizado, codStatus, id);
+        
+        
+        if (pedidoResult.getCliente() != null) {
+            pedidoResult.getCliente().setPassword(null);
+        }
+        
+        return ResponseEntity.ok(pedidoResult);
     }
 
     @DeleteMapping("/{id}")

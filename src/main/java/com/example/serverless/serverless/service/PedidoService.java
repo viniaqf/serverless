@@ -104,27 +104,52 @@ private UserRepository userRepository;
         return pedidoRepository.save(pedido);
     }
 
-    public Pedido atualizaPedido(Pedido pedido, Integer codStatus, Long id) {
+    public Pedido atualizaPedido(Pedido pedidoAtualizado, Integer codStatus, Long id) {
         Pedido pedidoExistente = pedidoRepository.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Pedido não encontrado"));
-        
-        Assert.notNull(codStatus, "O código do status é obrigatório");
-        
-        // Atualiza apenas o status
-        if (codStatus == 1) {
-            pedidoExistente.setStatus(Pedido.Status.PROCESSANDO);
-        } else if (codStatus == 2) {
-            pedidoExistente.setStatus(Pedido.Status.ENVIADO);
-        } else if (codStatus == 3) {
-            pedidoExistente.setStatus(Pedido.Status.CANCELADO);
-            // Se cancelado, devolve os itens ao estoque
-            for (ItemPedidoEmbeddable item : pedidoExistente.getItens()) {
-                Itens itemBanco = itensRepository.findById(item.getProduto().getId()).get();
-                itemBanco.setEstoque(itemBanco.getEstoque() + item.getQuantidade());
-                itensRepository.save(itemBanco);
+
+        // Update status if provided
+        if (codStatus != null) {
+            switch (codStatus) {
+                case 1:
+                    pedidoExistente.setStatus(Pedido.Status.PROCESSANDO);
+                    break;
+                case 2:
+                    pedidoExistente.setStatus(Pedido.Status.ENVIADO);
+                    break;
+                case 3:
+                    pedidoExistente.setStatus(Pedido.Status.CANCELADO);
+                    // Return items to stock if canceled
+                    for (ItemPedidoEmbeddable item : pedidoExistente.getItens()) {
+                        Itens itemBanco = itensRepository.findById(item.getProduto().getId())
+                            .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
+                        itemBanco.setEstoque(itemBanco.getEstoque() + item.getQuantidade());
+                        itensRepository.save(itemBanco);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Status inválido");
             }
-        } else {
-            throw new IllegalArgumentException("Status inválido");
+        }
+
+        // Update items only if a new pedido with items is provided
+        if (pedidoAtualizado != null && pedidoAtualizado.getItens() != null 
+                && !pedidoAtualizado.getItens().isEmpty()) {
+            // Validate new items
+            for (ItemPedidoEmbeddable item : pedidoAtualizado.getItens()) {
+                Assert.notNull(item.getProduto(), "O produto não pode ser nulo");
+                Assert.notNull(item.getProduto().getId(), "O ID do produto não pode ser nulo");
+                Assert.notNull(item.getQuantidade(), "A quantidade não pode ser nula");
+                
+                Itens itemBanco = itensRepository.findById(item.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Item não encontrado"));
+                
+                if (itemBanco.getEstoque() < item.getQuantidade()) {
+                    throw new IllegalArgumentException("Estoque insuficiente para: " + itemBanco.getNome());
+                }
+            }
+            pedidoExistente.setItens(pedidoAtualizado.getItens());
+            pedidoExistente.setTotal(calculaValorTotal(pedidoExistente));
         }
         
         return pedidoRepository.save(pedidoExistente);
