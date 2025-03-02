@@ -18,7 +18,7 @@ import com.example.serverless.serverless.dto.RegisterRequest;
 import com.example.serverless.serverless.entity.User.Role;
 
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.var;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -36,10 +36,10 @@ public class AuthController {
             new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
         
-        var user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmail(request.getEmail())
             .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
         
-        var token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
         
         return ResponseEntity.ok(new AuthenticationResponse(token));
     }
@@ -54,7 +54,7 @@ public class AuthController {
             
         userRepository.save(user);
         
-        var token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user);
         
         return ResponseEntity.ok(new AuthenticationResponse(token));
     }
