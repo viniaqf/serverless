@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.CollectionTable;
@@ -38,6 +39,9 @@ public class Pedido {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
+    @JsonIgnoreProperties({"pedidos", "password", "authorities", 
+        "accountNonExpired", "accountNonLocked", 
+        "credentialsNonExpired", "enabled"})
     private User cliente;
 
     @ElementCollection

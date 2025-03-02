@@ -13,6 +13,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.http.MediaType;
+import org.springframework.http.HttpMethod;
 
 import com.example.serverless.serverless.filter.JwtAuthFilter;
 import com.example.serverless.serverless.service.CustomUserDetailsService;
@@ -31,9 +35,11 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.disable())
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/pedidos/**").hasAnyRole("CLIENTE", "COLABORADOR")
+                .requestMatchers("/api/pedidos/**").hasAnyAuthority("ROLE_CLIENTE", "ROLE_COLABORADOR")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -43,6 +49,20 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void configureContentNegotiation(ContentNegotiationConfigurer configurer) {
+                configurer
+                    .defaultContentType(MediaType.APPLICATION_JSON)
+                    .mediaType("json", MediaType.APPLICATION_JSON)
+                    .ignoreAcceptHeader(true)
+                    .useRegisteredExtensionsOnly(false);
+            }
+        };
     }
 
     @Bean

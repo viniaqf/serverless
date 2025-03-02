@@ -3,6 +3,7 @@ package com.example.serverless.serverless.entity;
 import java.util.Collection;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.CascadeType;
@@ -52,6 +53,7 @@ public class User implements UserDetails {
     }
 
     @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("cliente")
     private List<Pedido> pedidos;
 
     @Override
