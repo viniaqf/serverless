@@ -43,7 +43,7 @@ private PedidoRepository pedidoRepository;
         return pedidoRepository.save(pedido);
     }
 
-    public Pedido atualizaPedido(Pedido pedido, Integer codStatus) {
+    public Pedido atualizaPedido(Pedido pedido, Integer codStatus, Long id) {
         Assert.notNull(pedido.getId(), "O campo id é obrigatório");
         Assert.notNull(pedido.getCliente(), "O campo cliente é obrigatório");
         Assert.notNull(pedido.getItens(), "O campo itens é obrigatório");
