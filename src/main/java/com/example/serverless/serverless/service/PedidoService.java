@@ -15,7 +15,10 @@ import com.example.serverless.serverless.repository.ItensRepository;
 import com.example.serverless.serverless.repository.PedidoRepository;
 import com.example.serverless.serverless.repository.UserRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class PedidoService {
     
 @Autowired
@@ -58,50 +61,58 @@ private UserRepository userRepository;
     }
 
     public Pedido criarPedido(Pedido pedido) {
+        log.info("Iniciando criação de pedido para cliente ID: {}", pedido.getCliente().getId());
         
-        Assert.notNull(pedido.getCliente(), "O cliente não pode ser nulo");
-        Assert.notNull(pedido.getCliente().getId(), "O ID do cliente não pode ser nulo");
-        Assert.notNull(pedido.getItens(), "A lista de itens não pode ser nula");
-        
-        
-        User cliente = userRepository.findById(pedido.getCliente().getId())
-            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
-        pedido.setCliente(cliente);
+        try {
+            Assert.notNull(pedido.getCliente(), "O cliente não pode ser nulo");
+            Assert.notNull(pedido.getCliente().getId(), "O ID do cliente não pode ser nulo");
+            Assert.notNull(pedido.getItens(), "A lista de itens não pode ser nula");
+            
+            User cliente = userRepository.findById(pedido.getCliente().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+            
+            log.debug("Cliente encontrado: {}", cliente.getName());
+            pedido.setCliente(cliente);
 
-        
-        List<ItemPedidoEmbeddable> itensProcessados = new ArrayList<>();
-        
-        for (ItemPedidoEmbeddable itemPedido : pedido.getItens()) {
-            Assert.notNull(itemPedido.getProduto(), "O produto não pode ser nulo");
-            Assert.notNull(itemPedido.getProduto().getId(), "O ID do produto não pode ser nulo");
-            Assert.notNull(itemPedido.getQuantidade(), "A quantidade não pode ser nula");
             
+            List<ItemPedidoEmbeddable> itensProcessados = new ArrayList<>();
             
-            Itens itemBanco = itensRepository.findById(itemPedido.getProduto().getId())
-                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemPedido.getProduto().getId()));
-            
-            
-            if (itemBanco.getEstoque() < itemPedido.getQuantidade()) {
-                throw new IllegalArgumentException("Estoque insuficiente para: " + itemBanco.getNome());
+            for (ItemPedidoEmbeddable itemPedido : pedido.getItens()) {
+                Assert.notNull(itemPedido.getProduto(), "O produto não pode ser nulo");
+                Assert.notNull(itemPedido.getProduto().getId(), "O ID do produto não pode ser nulo");
+                Assert.notNull(itemPedido.getQuantidade(), "A quantidade não pode ser nula");
+                
+                
+                Itens itemBanco = itensRepository.findById(itemPedido.getProduto().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemPedido.getProduto().getId()));
+                
+                
+                if (itemBanco.getEstoque() < itemPedido.getQuantidade()) {
+                    throw new IllegalArgumentException("Estoque insuficiente para: " + itemBanco.getNome());
+                }
+                
+                
+                itemBanco.setEstoque(itemBanco.getEstoque() - itemPedido.getQuantidade());
+                itensRepository.save(itemBanco);
+                
+                
+                ItemPedidoEmbeddable novoItemPedido = new ItemPedidoEmbeddable();
+                novoItemPedido.setProduto(itemBanco);
+                novoItemPedido.setQuantidade(itemPedido.getQuantidade());
+                itensProcessados.add(novoItemPedido);
             }
             
+        
+            pedido.setItens(itensProcessados);
+            pedido.setTotal(calculaValorTotal(pedido));
+            pedido.setStatus(Pedido.Status.PENDENTE);
             
-            itemBanco.setEstoque(itemBanco.getEstoque() - itemPedido.getQuantidade());
-            itensRepository.save(itemBanco);
-            
-            
-            ItemPedidoEmbeddable novoItemPedido = new ItemPedidoEmbeddable();
-            novoItemPedido.setProduto(itemBanco);
-            novoItemPedido.setQuantidade(itemPedido.getQuantidade());
-            itensProcessados.add(novoItemPedido);
+            log.info("Pedido criado com sucesso. ID: {}", pedido.getId());
+            return pedidoRepository.save(pedido);
+        } catch (Exception e) {
+            log.error("Erro ao criar pedido: {}", e.getMessage());
+            throw e;
         }
-        
-       
-        pedido.setItens(itensProcessados);
-        pedido.setTotal(calculaValorTotal(pedido));
-        pedido.setStatus(Pedido.Status.PENDENTE);
-        
-        return pedidoRepository.save(pedido);
     }
 
     public Pedido atualizaPedido(Pedido pedidoAtualizado, Integer codStatus, Long id) {
