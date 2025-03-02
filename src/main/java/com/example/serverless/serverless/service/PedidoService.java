@@ -1,5 +1,6 @@
 package com.example.serverless.serverless.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,10 @@ import org.springframework.util.Assert;
 
 import com.example.serverless.serverless.entity.Itens;
 import com.example.serverless.serverless.entity.Pedido;
+import com.example.serverless.serverless.entity.User;
 import com.example.serverless.serverless.repository.ItensRepository;
 import com.example.serverless.serverless.repository.PedidoRepository;
+import com.example.serverless.serverless.repository.UserRepository;
 
 @Service
 public class PedidoService {
@@ -20,13 +23,33 @@ private PedidoRepository pedidoRepository;
 @Autowired 
 private ItensRepository itensRepository;
 
+@Autowired
+private UserRepository userRepository;
+
     public Float calculaValorTotal(Pedido pedido) {
         Float valorTotal = 0f;
-        for (Itens item : pedido.getItens()) {
-            Itens itemBanco = itensRepository.findById(item.getNome()).orElseThrow( () -> new IllegalArgumentException("Item não encontrado:" + item.getNome()));
+        
+        for (Itens itemPedido : pedido.getItens()) {
+         
+            Assert.notNull(itemPedido.getId(), "ID do item não pode ser nulo");
+            Assert.notNull(itemPedido.getQuantidade(), "A quantidade não pode ser nula");
+            
+            Itens itemBanco = itensRepository.findById(itemPedido.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + itemPedido.getId()));
+            
+        
+            Assert.notNull(itemBanco.getEstoque(), "Estoque do item não pode ser nulo: " + itemBanco.getNome());
+            
+            if (itemBanco.getEstoque() < itemPedido.getQuantidade()) {
+                throw new IllegalArgumentException("Estoque insuficiente para o item: " + itemBanco.getNome());
+            }
 
-            valorTotal += itemBanco.getPreco() * itemBanco.getQuantidade();
+            
+            valorTotal += itemBanco.getPreco() * itemPedido.getQuantidade();
+
+            
         }
+        
         return valorTotal;
     }
 
@@ -39,10 +62,26 @@ private ItensRepository itensRepository;
     }
 
     public Pedido criarPedido(Pedido pedido) {
+    
+        User cliente = userRepository.findById(pedido.getCliente().getId())
+            .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
+        pedido.setCliente(cliente);
 
-        Assert.notNull(pedido.getCliente(), "O campo cliente é obrigatório");
-        Assert.notNull(pedido.getItens(), "O campo itens é obrigatório");
+        // Process items
+        List<Itens> itensProcessados = new ArrayList<>();
+        for (Itens item : pedido.getItens()) {
+            Itens itemBanco = itensRepository.findById(item.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Item não encontrado: " + item.getId()));
+            
+            
+            if (itemBanco.getEstoque() < item.getQuantidade()) {
+                throw new IllegalArgumentException("Estoque insuficiente para: " + itemBanco.getNome());
+            }
+            itemBanco.setEstoque(itemBanco.getEstoque() - item.getQuantidade());
+            itensProcessados.add(itensRepository.save(itemBanco));
+        }
         
+        pedido.setItens(itensProcessados);
         pedido.setTotal(calculaValorTotal(pedido));
         pedido.setStatus(Pedido.Status.PENDENTE);
         

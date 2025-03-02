@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,9 +44,14 @@ public class ItensController {
     }
 
     @PatchMapping("{id}")
-    public ResponseEntity<String> put(@PathVariable("id") @RequestBody Itens item, final String nome) {
-        itensService.atualizar(item, nome);
+    public ResponseEntity<String> put(@PathVariable("id") @RequestBody Itens item, final Long id) {
+        itensService.atualizar(item, id);
         return ResponseEntity.ok("Item atualizado com sucesso");
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+        itensService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

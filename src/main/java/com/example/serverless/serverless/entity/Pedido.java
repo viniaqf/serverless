@@ -32,11 +32,11 @@ public class Pedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id", nullable = false)
     private User cliente;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY)
     @JoinColumn(name = "pedido_id")
     private List<Itens> itens;
     
@@ -46,10 +46,10 @@ public class Pedido {
     @Column(nullable = false)
     private Status status;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime data_criacao;
     
-    @Column(nullable = false)
+    @Column(nullable = true)
     private LocalDateTime data_atualizacao;
 
     @Column(nullable = false)

@@ -22,18 +22,18 @@ public class ItensService {
     public Itens post (Itens item) {
         Assert.notNull(item.getNome(), "O nome é obrigatório");
         Assert.notNull(item.getPreco(), "O preço é obrigatório");
-        Assert.notNull(item.getQuantidade(), "A quantidade é obrigatória");
+        Assert.notNull(item.getEstoque(), "A quantidade em estoque é obrigatória");
         return itensRepository.save(item);
     }
 
-    public Itens atualizar (Itens item, String nome) {
+    public Itens atualizar (Itens item, Long id) {
         Assert.notNull(item.getNome(), "O nome é obrigatório");
         Assert.notNull(item.getPreco(), "O preço é obrigatório");
-        Assert.notNull(item.getQuantidade(), "A quantidade é obrigatória");
+        Assert.notNull(item.getEstoque(), "A quantidade em estoque é obrigatória");
         return itensRepository.save(item);
     }
 
-    public void delete(String nome) {
-        itensRepository.deleteById(nome);
+    public void delete(Long id){
+        itensRepository.deleteById(id);
     }
 }
