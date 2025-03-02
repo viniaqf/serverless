@@ -26,7 +26,7 @@ public class ItensService {
         return itensRepository.save(item);
     }
 
-    public Itens put (Itens item) {
+    public Itens atualizar (Itens item, String nome) {
         Assert.notNull(item.getNome(), "O nome é obrigatório");
         Assert.notNull(item.getPreco(), "O preço é obrigatório");
         Assert.notNull(item.getQuantidade(), "A quantidade é obrigatória");

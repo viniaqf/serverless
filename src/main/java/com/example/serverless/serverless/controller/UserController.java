@@ -53,8 +53,9 @@ private UserService userService;
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<User> atualizar(@RequestBody User user, @PathVariable("id") final Long id) {
-        return ResponseEntity.ok(userService.atualizar(user, id));
+    public ResponseEntity<String> atualizar(@RequestBody User user, @PathVariable("id") final Long id) {
+        userService.atualizar(user, id);
+        return ResponseEntity.ok("Usuário atualizado com sucesso");
     }
 
     @DeleteMapping(" /{id}")
@@ -62,6 +63,6 @@ private UserService userService;
         userService.delete(id);
         return ResponseEntity.noContent().build();
     }
-    
+
 
 }

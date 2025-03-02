@@ -47,8 +47,9 @@ public class PedidoController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Pedido> atualizar(@PathVariable("id") Pedido pedido, Integer codStatus, Long id) {
-        return ResponseEntity.ok(pedidoService.atualizaPedido(pedido, codStatus, id));
+    public ResponseEntity<String> atualizar(@PathVariable("id") Pedido pedido, Integer codStatus, Long id) {
+        pedidoService.atualizaPedido(pedido, codStatus, id);
+        return ResponseEntity.ok("Pedido atualizado com sucesso");
     }
 
     @DeleteMapping("/{id}")
