@@ -1,5 +1,7 @@
 package com.example.serverless.serverless.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -22,6 +24,10 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }   
 
+    public List<User> getAll() {
+        return userRepository.findAll();
+    }
+
     public User post(User user) {
         Assert.notNull(user.getName(), "O nome é obrigatório");
         Assert.notNull(user.getEmail(), "O email é obrigatório");
@@ -30,7 +36,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User put(User user) {
+    public User atualizar(User user, Long id) {
         Assert.notNull(user.getId(), "O id é obrigatório");
         Assert.notNull(user.getName(), "O nome é obrigatório");
         Assert.notNull(user.getEmail(), "O email é obrigatório");

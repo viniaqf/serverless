@@ -1,5 +1,7 @@
 package com.example.serverless.serverless.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -24,6 +26,10 @@ private PedidoRepository pedidoRepository;
 
     public Pedido findById(Long id) {
         return pedidoRepository.findById(id).orElse(null);
+    }
+
+    public List<Pedido> getAll() {
+        return pedidoRepository.findAll();
     }
 
     public Pedido criarPedido(Pedido pedido) {
