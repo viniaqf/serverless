@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.example.serverless.serverless.dto.ApiResponse;
 import com.example.serverless.serverless.entity.Pedido;
 import com.example.serverless.serverless.service.PedidoService;
 
@@ -26,67 +27,63 @@ public class PedidoController {
     @Autowired
     private PedidoService pedidoService;
     
-    @GetMapping()
-    public ResponseEntity<List<Pedido>> getAll() {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<Pedido>>> getAll() {
         List<Pedido> pedidos = pedidoService.getAll();
         pedidos.forEach(pedido -> {
             if (pedido.getCliente() != null) {
                 pedido.getCliente().setPassword(null);
             }
         });
-        return ResponseEntity.ok().body(pedidos);
+        return ResponseEntity.ok(ApiResponse.success(pedidos));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Pedido> getById(@PathVariable("id") final Long id) {
+    public ResponseEntity<ApiResponse<Pedido>> getById(@PathVariable("id") final Long id) {
         Pedido pedido = pedidoService.findById(id);
+        if (pedido == null) {
+            return ResponseEntity.notFound().build();
+        }
         if (pedido.getCliente() != null) {
             pedido.getCliente().setPassword(null);
         }
-        return ResponseEntity.ok(pedido);
+        return ResponseEntity.ok(ApiResponse.success(pedido));
     }
 
     @PostMapping
-    public ResponseEntity<Pedido> criarPedido(@RequestBody Pedido pedido) {
+    public ResponseEntity<ApiResponse<Pedido>> criarPedido(@RequestBody Pedido pedido) {
         Pedido novoPedido = pedidoService.criarPedido(pedido);
-        URI location = ServletUriComponentsBuilder
-            .fromCurrentRequest()
-            .path("/{id}")
-            .buildAndExpand(novoPedido.getId())
-            .toUri();
-        
-        // Limpa informações sensíveis ou desnecessárias antes de retornar
         novoPedido.getCliente().setPassword(null);
         
-        return ResponseEntity.created(location).body(novoPedido);
+        return ResponseEntity.created(getLocationUri(novoPedido.getId()))
+            .body(ApiResponse.success(novoPedido));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Pedido> atualizar(
+    public ResponseEntity<ApiResponse<Pedido>> atualizar(
             @PathVariable("id") Long id,
             @RequestParam(required = false) Integer codStatus,
             @RequestBody(required = false) Pedido pedidoAtualizado) {
         
-        
-        Pedido pedidoExistente = pedidoService.findById(id);
-        if (pedidoExistente == null) {
-            return ResponseEntity.notFound().build();
-        }
-        
-        
         Pedido pedidoResult = pedidoService.atualizaPedido(pedidoAtualizado, codStatus, id);
-        
-        
         if (pedidoResult.getCliente() != null) {
             pedidoResult.getCliente().setPassword(null);
         }
         
-        return ResponseEntity.ok(pedidoResult);
+        return ResponseEntity.ok(ApiResponse.success(pedidoResult));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") Long id) {
         pedidoService.deletaPedido(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    private URI getLocationUri(Long id) {
+        return ServletUriComponentsBuilder
+            .fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(id)
+            .toUri();
     }
 }

@@ -162,7 +162,7 @@ private UserRepository userRepository;
         if (pedido.getStatus() != Pedido.Status.PENDENTE && 
             pedido.getStatus() != Pedido.Status.PROCESSANDO) {
             throw new IllegalArgumentException(
-                "Não é possível deletar um pedido que não está pendente ou processando");
+                "Não é possível deletar um pedido que não está pendente ou processando, esse pedido está com o status: " + pedido.getStatus());
         }
         
         pedidoRepository.deleteById(id);
