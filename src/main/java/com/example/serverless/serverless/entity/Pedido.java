@@ -1,10 +1,13 @@
 package com.example.serverless.serverless.entity;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -36,9 +39,9 @@ public class Pedido {
     @JoinColumn(name = "cliente_id", nullable = false)
     private User cliente;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pedido_id")
-    private List<Itens> itens;
+    @ElementCollection
+    @CollectionTable(name = "pedido_itens", joinColumns = @JoinColumn(name = "pedido_id"))
+    private List<ItemPedidoEmbeddable> itens = new ArrayList<>(); // Inicializar a lista
     
     @Column(nullable = false)
     private Float total;
@@ -63,7 +66,6 @@ public class Pedido {
     public void setDataCriacao() {
         this.isEdited = false;
         this.data_criacao = LocalDateTime.now();
-
     }
 
     @PreUpdate

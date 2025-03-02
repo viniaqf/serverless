@@ -33,8 +33,9 @@ public class Itens {
     @Column(nullable = false)
     private Integer estoque;
 
-    @Transient
-    private Integer quantidade;
+    // Remover este campo pois agora está no ItemPedidoEmbeddable
+    // @Transient
+    // private Integer quantidade;
     
     @Column(nullable = true)
     private String descricao;

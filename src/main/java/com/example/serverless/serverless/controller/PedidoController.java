@@ -35,15 +35,19 @@ public class PedidoController {
         return ResponseEntity.ok(null);
     }
 
-    @PostMapping()
-    public ResponseEntity<Pedido> post(@RequestBody Pedido pedido) {
-        Pedido createdPedido = pedidoService.criarPedido(pedido);
+    @PostMapping
+    public ResponseEntity<Pedido> criarPedido(@RequestBody Pedido pedido) {
+        Pedido novoPedido = pedidoService.criarPedido(pedido);
         URI location = ServletUriComponentsBuilder
             .fromCurrentRequest()
             .path("/{id}")
-            .buildAndExpand(createdPedido.getId())
+            .buildAndExpand(novoPedido.getId())
             .toUri();
-        return ResponseEntity.created(location).body(createdPedido);
+        
+        // Limpa informações sensíveis ou desnecessárias antes de retornar
+        novoPedido.getCliente().setPassword(null);
+        
+        return ResponseEntity.created(location).body(novoPedido);
     }
 
     @PatchMapping("/{id}")
