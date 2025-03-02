@@ -2,7 +2,6 @@ package com.example.serverless.serverless.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.serverless.serverless.entity.Pedido;
 import com.example.serverless.serverless.entity.User;
 import com.example.serverless.serverless.service.UserService;
 
