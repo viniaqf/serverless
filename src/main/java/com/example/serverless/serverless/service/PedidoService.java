@@ -8,6 +8,7 @@ import org.springframework.util.Assert;
 
 import com.example.serverless.serverless.entity.Itens;
 import com.example.serverless.serverless.entity.Pedido;
+import com.example.serverless.serverless.repository.ItensRepository;
 import com.example.serverless.serverless.repository.PedidoRepository;
 
 @Service
@@ -16,10 +17,15 @@ public class PedidoService {
 @Autowired
 private PedidoRepository pedidoRepository;
 
+@Autowired 
+private ItensRepository itensRepository;
+
     public Float calculaValorTotal(Pedido pedido) {
         Float valorTotal = 0f;
         for (Itens item : pedido.getItens()) {
-            valorTotal += item.getPreco() * item.getQuantidade();
+            Itens itemBanco = itensRepository.findById(item.getNome()).orElseThrow( () -> new IllegalArgumentException("Item não encontrado:" + item.getNome()));
+
+            valorTotal += itemBanco.getPreco() * itemBanco.getQuantidade();
         }
         return valorTotal;
     }
