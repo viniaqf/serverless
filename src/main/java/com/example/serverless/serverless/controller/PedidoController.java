@@ -27,12 +27,12 @@ public class PedidoController {
     
     @GetMapping()
     public ResponseEntity<List<Pedido>> getAll() {
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(pedidoService.getAll());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> getById(@PathVariable("id") final Long id) {
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(pedidoService.findById(id));
     }
 
     @PostMapping
