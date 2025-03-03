@@ -1,0 +1,6 @@
+# Ignore arquivos e pastas desnecessárias
+.git
+.gitignore
+
+# Permitir explicitamente o diretório target
+!target/**
